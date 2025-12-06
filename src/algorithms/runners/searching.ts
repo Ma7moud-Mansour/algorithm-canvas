@@ -5,6 +5,78 @@ export interface SearchingInput {
   target: number;
 }
 
+export const linearSearchRunner: AlgorithmRunner<SearchingInput> = {
+  getInitialInput: () => ({
+    array: [34, 7, 23, 32, 5, 62, 14, 29],
+    target: 32,
+  }),
+
+  generateSteps: (input: SearchingInput): VisualizationStep[] => {
+    const steps: VisualizationStep[] = [];
+    const arr = [...input.array];
+    const target = input.target;
+
+    steps.push({
+      kind: 'init',
+      payload: { array: arr, target },
+      codeLine: 0,
+      description: `Searching for ${target} in array`,
+    });
+
+    for (let i = 0; i < arr.length; i++) {
+      steps.push({
+        kind: 'check',
+        payload: { index: i, value: arr[i], target, array: arr },
+        codeLine: 1,
+        description: `Checking index ${i}: arr[${i}] = ${arr[i]}`,
+      });
+
+      steps.push({
+        kind: 'compare',
+        payload: { indices: [i], value: arr[i], target, array: arr },
+        codeLine: 3,
+        description: `Is ${arr[i]} equal to ${target}?`,
+      });
+
+      if (arr[i] === target) {
+        steps.push({
+          kind: 'found',
+          payload: { index: i, value: arr[i], array: arr },
+          codeLine: 4,
+          description: `Found ${target} at index ${i}!`,
+        });
+        return steps;
+      }
+
+      steps.push({
+        kind: 'not-match',
+        payload: { index: i, array: arr },
+        codeLine: 1,
+        description: `${arr[i]} ≠ ${target}, continue searching`,
+      });
+    }
+
+    steps.push({
+      kind: 'not-found',
+      payload: { target, array: arr },
+      codeLine: 8,
+      description: `${target} not found in array`,
+    });
+
+    return steps;
+  },
+
+  validateInput: (input: SearchingInput) => {
+    if (!Array.isArray(input.array) || input.array.length === 0) {
+      return { valid: false, error: 'Please provide a non-empty array' };
+    }
+    if (typeof input.target !== 'number') {
+      return { valid: false, error: 'Target must be a number' };
+    }
+    return { valid: true };
+  },
+};
+
 export const binarySearchRunner: AlgorithmRunner<SearchingInput> = {
   getInitialInput: () => ({
     array: [2, 5, 8, 12, 16, 23, 38, 56, 72, 91],
@@ -44,7 +116,7 @@ export const binarySearchRunner: AlgorithmRunner<SearchingInput> = {
 
       steps.push({
         kind: 'compare',
-        payload: { mid, midValue: arr[mid], target, array: arr },
+        payload: { mid, midValue: arr[mid], target, indices: [mid], array: arr, left, right },
         codeLine: 7,
         description: `Compare arr[${mid}]=${arr[mid]} with target ${target}`,
       });
@@ -62,7 +134,7 @@ export const binarySearchRunner: AlgorithmRunner<SearchingInput> = {
       if (arr[mid] < target) {
         steps.push({
           kind: 'search-right',
-          payload: { oldLeft: left, newLeft: mid + 1, right, array: arr },
+          payload: { oldLeft: left, newLeft: mid + 1, right, array: arr, mid },
           codeLine: 12,
           description: `${arr[mid]} < ${target}, search right half: left = ${mid + 1}`,
         });
@@ -70,7 +142,7 @@ export const binarySearchRunner: AlgorithmRunner<SearchingInput> = {
       } else {
         steps.push({
           kind: 'search-left',
-          payload: { left, oldRight: right, newRight: mid - 1, array: arr },
+          payload: { left, oldRight: right, newRight: mid - 1, array: arr, mid },
           codeLine: 14,
           description: `${arr[mid]} > ${target}, search left half: right = ${mid - 1}`,
         });
@@ -88,7 +160,7 @@ export const binarySearchRunner: AlgorithmRunner<SearchingInput> = {
     steps.push({
       kind: 'not-found',
       payload: { target, array: arr },
-      codeLine: 17,
+      codeLine: 18,
       description: `${target} not found in array`,
     });
 
@@ -99,7 +171,6 @@ export const binarySearchRunner: AlgorithmRunner<SearchingInput> = {
     if (!Array.isArray(input.array) || input.array.length === 0) {
       return { valid: false, error: 'Please provide a non-empty array' };
     }
-    // Check if sorted
     for (let i = 1; i < input.array.length; i++) {
       if (input.array[i] < input.array[i - 1]) {
         return { valid: false, error: 'Array must be sorted for binary search' };
