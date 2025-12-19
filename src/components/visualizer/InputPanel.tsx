@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 import { generateSudokuPuzzle } from '@/lib/sudoku';
 
 interface InputPanelProps {
-  type: 'sorting' | 'searching' | 'graph' | 'nqueens' | 'fibonacci' | 'hanoi' | 'closestpair' | 'knapsack' | 'mergepattern' | 'sudoku' | 'maze' | 'knight';
+  type: 'sorting' | 'searching' | 'graph' | 'nqueens' | 'fibonacci' | 'hanoi' | 'closestpair' | 'knapsack' | 'mergepattern' | 'sudoku' | 'maze' | 'knight' | 'knapsack01' | 'lcs' | 'bellmanford';
   onInputChange: (input: Record<string, unknown>) => void;
   className?: string;
 }
@@ -22,6 +22,10 @@ export function InputPanel({ type, onInputChange, className }: InputPanelProps) 
   const [fileSizes, setFileSizes] = useState('2, 3, 4, 5, 6');
   const [mazeSize, setMazeSize] = useState('5');
   const [knightSize, setKnightSize] = useState('5');
+  const [str1, setStr1] = useState('ABCDGH');
+  const [str2, setStr2] = useState('AEDFHR');
+  const [k01Items, setK01Items] = useState('2:3, 3:4, 4:5, 5:6');
+  const [k01Capacity, setK01Capacity] = useState('5');
   const [error, setError] = useState('');
 
   const parseArray = (input: string): number[] | null => {
@@ -126,6 +130,40 @@ export function InputPanel({ type, onInputChange, className }: InputPanelProps) 
       return;
     }
 
+    if (type === 'knapsack01') {
+      const capacity = parseInt(k01Capacity, 10);
+      if (isNaN(capacity) || capacity <= 0 || capacity > 20) {
+        setError('Capacity must be between 1 and 20');
+        return;
+      }
+      try {
+        const items = k01Items.split(',').map(item => {
+          const [weight, value] = item.trim().split(':').map(s => parseInt(s.trim(), 10));
+          if (isNaN(weight) || isNaN(value)) throw new Error('Invalid format');
+          return { weight, value };
+        });
+        if (items.length === 0 || items.length > 8) throw new Error('1-8 items required');
+        onInputChange({ weights: items.map(i => i.weight), values: items.map(i => i.value), capacity });
+      } catch {
+        setError('Format: weight:value, ... (e.g., 2:3, 3:4)');
+      }
+      return;
+    }
+
+    if (type === 'lcs') {
+      if (str1.length === 0 || str1.length > 10 || str2.length === 0 || str2.length > 10) {
+        setError('Strings must be 1-10 characters');
+        return;
+      }
+      onInputChange({ str1: str1.toUpperCase(), str2: str2.toUpperCase() });
+      return;
+    }
+
+    if (type === 'bellmanford') {
+      onInputChange({});
+      return;
+    }
+
     const array = parseArray(arrayInput);
     if (!array) {
       setError('Please enter valid comma-separated numbers');
@@ -208,6 +246,36 @@ export function InputPanel({ type, onInputChange, className }: InputPanelProps) 
       const size = Math.floor(Math.random() * 3) + 5;
       setKnightSize(size.toString());
       onInputChange({ size, startX: 0, startY: 0 });
+      return;
+    }
+
+    if (type === 'knapsack01') {
+      const numItems = Math.floor(Math.random() * 4) + 3;
+      const capacity = Math.floor(Math.random() * 8) + 5;
+      setK01Capacity(capacity.toString());
+      const items = Array.from({ length: numItems }, () => ({
+        weight: Math.floor(Math.random() * 5) + 1,
+        value: Math.floor(Math.random() * 10) + 1,
+      }));
+      setK01Items(items.map(i => `${i.weight}:${i.value}`).join(', '));
+      onInputChange({ weights: items.map(i => i.weight), values: items.map(i => i.value), capacity });
+      return;
+    }
+
+    if (type === 'lcs') {
+      const chars = 'ABCDEFGH';
+      const len1 = Math.floor(Math.random() * 4) + 4;
+      const len2 = Math.floor(Math.random() * 4) + 4;
+      const s1 = Array.from({ length: len1 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+      const s2 = Array.from({ length: len2 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+      setStr1(s1);
+      setStr2(s2);
+      onInputChange({ str1: s1, str2: s2 });
+      return;
+    }
+
+    if (type === 'bellmanford') {
+      onInputChange({});
       return;
     }
 
@@ -348,6 +416,40 @@ export function InputPanel({ type, onInputChange, className }: InputPanelProps) 
           />
         </div>
       );
+    }
+
+    if (type === 'knapsack01') {
+      return (
+        <div className="space-y-3">
+          <div className="space-y-1.5">
+            <Label htmlFor="k01-capacity" className="text-xs text-muted-foreground">Capacity (1-20)</Label>
+            <Input id="k01-capacity" value={k01Capacity} onChange={(e) => setK01Capacity(e.target.value)} className="font-mono text-sm bg-muted/50 border-panel-border w-32" />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="k01-items" className="text-xs text-muted-foreground">Items (weight:value, ...)</Label>
+            <Input id="k01-items" value={k01Items} onChange={(e) => setK01Items(e.target.value)} className="font-mono text-sm bg-muted/50 border-panel-border" />
+          </div>
+        </div>
+      );
+    }
+
+    if (type === 'lcs') {
+      return (
+        <div className="space-y-3">
+          <div className="space-y-1.5">
+            <Label htmlFor="lcs-str1" className="text-xs text-muted-foreground">String 1 (1-10 chars)</Label>
+            <Input id="lcs-str1" value={str1} onChange={(e) => setStr1(e.target.value.toUpperCase())} className="font-mono text-sm bg-muted/50 border-panel-border" />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="lcs-str2" className="text-xs text-muted-foreground">String 2 (1-10 chars)</Label>
+            <Input id="lcs-str2" value={str2} onChange={(e) => setStr2(e.target.value.toUpperCase())} className="font-mono text-sm bg-muted/50 border-panel-border" />
+          </div>
+        </div>
+      );
+    }
+
+    if (type === 'bellmanford') {
+      return <p className="text-xs text-muted-foreground">Click Randomize for a new graph.</p>;
     }
 
     return (

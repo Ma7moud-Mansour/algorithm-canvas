@@ -14,6 +14,9 @@ import { MergePatternVisualizer } from '@/components/visualizer/MergePatternVisu
 import { SudokuVisualizer } from '@/components/visualizer/SudokuVisualizer';
 import { MazeVisualizer } from '@/components/visualizer/MazeVisualizer';
 import { KnightVisualizer } from '@/components/visualizer/KnightVisualizer';
+import { Knapsack01Visualizer } from '@/components/visualizer/Knapsack01Visualizer';
+import { LCSVisualizer } from '@/components/visualizer/LCSVisualizer';
+import { BellmanFordVisualizer } from '@/components/visualizer/BellmanFordVisualizer';
 import { ControlPanel } from '@/components/visualizer/ControlPanel';
 import { LogPanel } from '@/components/visualizer/LogPanel';
 import { AlgorithmInfo } from '@/components/visualizer/AlgorithmInfo';
@@ -32,6 +35,9 @@ import { fractionalKnapsackCode, optimalMergeCode } from '@/algorithms/code/gree
 import { sudokuCode } from '@/algorithms/code/sudoku';
 import { ratMazeCode } from '@/algorithms/code/maze';
 import { knightTourCode } from '@/algorithms/code/knight';
+import { knapsack01Code } from '@/algorithms/code/knapsack01';
+import { lcsCode } from '@/algorithms/code/lcs';
+import { bellmanFordCode } from '@/algorithms/code/bellmanford';
 import { bubbleSortRunner, selectionSortRunner, quickSortRunner, insertionSortRunner, mergeSortRunner, SortingInput } from '@/algorithms/runners/sorting';
 import { linearSearchRunner, binarySearchRunner, SearchingInput } from '@/algorithms/runners/searching';
 import { bfsRunner, dfsRunner, GraphInput } from '@/algorithms/runners/graph';
@@ -43,10 +49,13 @@ import { fractionalKnapsackRunner, optimalMergeRunner, FractionalKnapsackInput, 
 import { sudokuRunner, SudokuInput } from '@/algorithms/runners/sudoku';
 import { ratMazeRunner, MazeInput } from '@/algorithms/runners/maze';
 import { knightTourRunner, KnightInput } from '@/algorithms/runners/knight';
+import { knapsack01Runner, Knapsack01Input } from '@/algorithms/runners/knapsack01';
+import { lcsRunner, LCSInput } from '@/algorithms/runners/lcs';
+import { bellmanFordRunner, BellmanFordInput } from '@/algorithms/runners/bellmanford';
 import { VisualizationStep, AlgorithmCode, AlgorithmRunner } from '@/types/algorithm';
 import { cn } from '@/lib/utils';
 
-type AnyInput = SortingInput | SearchingInput | GraphInput | NQueensInput | FibonacciInput | HanoiInput | ClosestPairInput | FractionalKnapsackInput | OptimalMergeInput | SudokuInput | MazeInput | KnightInput;
+type AnyInput = SortingInput | SearchingInput | GraphInput | NQueensInput | FibonacciInput | HanoiInput | ClosestPairInput | FractionalKnapsackInput | OptimalMergeInput | SudokuInput | MazeInput | KnightInput | Knapsack01Input | LCSInput | BellmanFordInput;
 
 const algorithmCodeMap: Record<string, Record<string, AlgorithmCode>> = {
   'bubble-sort': bubbleSortCode,
@@ -67,6 +76,9 @@ const algorithmCodeMap: Record<string, Record<string, AlgorithmCode>> = {
   'sudoku-solver': sudokuCode,
   'rat-maze': ratMazeCode,
   'knight-tour': knightTourCode,
+  'knapsack-01': knapsack01Code,
+  'lcs': lcsCode,
+  'bellman-ford': bellmanFordCode,
 };
 
 const algorithmRunnerMap: Record<string, AlgorithmRunner<AnyInput>> = {
@@ -88,9 +100,12 @@ const algorithmRunnerMap: Record<string, AlgorithmRunner<AnyInput>> = {
   'sudoku-solver': sudokuRunner as AlgorithmRunner<AnyInput>,
   'rat-maze': ratMazeRunner as AlgorithmRunner<AnyInput>,
   'knight-tour': knightTourRunner as AlgorithmRunner<AnyInput>,
+  'knapsack-01': knapsack01Runner as AlgorithmRunner<AnyInput>,
+  'lcs': lcsRunner as AlgorithmRunner<AnyInput>,
+  'bellman-ford': bellmanFordRunner as AlgorithmRunner<AnyInput>,
 };
 
-const getVisualizerType = (category: string, id: string): 'array' | 'graph' | 'grid' | 'dp' | 'hanoi' | 'closestpair' | 'knapsack' | 'mergepattern' | 'sudoku' | 'maze' | 'knight' => {
+const getVisualizerType = (category: string, id: string): 'array' | 'graph' | 'grid' | 'dp' | 'hanoi' | 'closestpair' | 'knapsack' | 'mergepattern' | 'sudoku' | 'maze' | 'knight' | 'knapsack01' | 'lcs' | 'bellmanford' => {
   if (id === 'tower-of-hanoi') return 'hanoi';
   if (id === 'closest-pair') return 'closestpair';
   if (id === 'fractional-knapsack') return 'knapsack';
@@ -98,6 +113,9 @@ const getVisualizerType = (category: string, id: string): 'array' | 'graph' | 'g
   if (id === 'sudoku-solver') return 'sudoku';
   if (id === 'rat-maze') return 'maze';
   if (id === 'knight-tour') return 'knight';
+  if (id === 'knapsack-01') return 'knapsack01';
+  if (id === 'lcs') return 'lcs';
+  if (id === 'bellman-ford') return 'bellmanford';
   if (id === 'n-queens') return 'grid';
   if (category === 'graph') return 'graph';
   if (category === 'dynamic-programming') return 'dp';
@@ -164,7 +182,7 @@ export default function AlgorithmVisualizer() {
     );
   }
 
-  const inputType = id === 'tower-of-hanoi' ? 'hanoi' : id === 'closest-pair' ? 'closestpair' : id === 'fractional-knapsack' ? 'knapsack' : id === 'optimal-merge' ? 'mergepattern' : id === 'sudoku-solver' ? 'sudoku' : id === 'rat-maze' ? 'maze' : id === 'knight-tour' ? 'knight' : category === 'searching' ? 'searching' : category === 'graph' ? 'graph' : category === 'backtracking' ? 'nqueens' : category === 'dynamic-programming' ? 'fibonacci' : 'sorting';
+  const inputType = id === 'tower-of-hanoi' ? 'hanoi' : id === 'closest-pair' ? 'closestpair' : id === 'fractional-knapsack' ? 'knapsack' : id === 'optimal-merge' ? 'mergepattern' : id === 'sudoku-solver' ? 'sudoku' : id === 'rat-maze' ? 'maze' : id === 'knight-tour' ? 'knight' : id === 'knapsack-01' ? 'knapsack01' : id === 'lcs' ? 'lcs' : id === 'bellman-ford' ? 'bellmanford' : category === 'searching' ? 'searching' : category === 'graph' ? 'graph' : category === 'backtracking' ? 'nqueens' : category === 'dynamic-programming' ? 'fibonacci' : 'sorting';
 
   return (
     <div className="min-h-screen p-4 lg:p-6">
@@ -224,6 +242,15 @@ export default function AlgorithmVisualizer() {
           )}
           {visualizerType === 'knight' && (
             <KnightVisualizer currentStep={currentStep} className="min-h-[300px]" />
+          )}
+          {visualizerType === 'knapsack01' && (
+            <Knapsack01Visualizer currentStep={currentStep} className="min-h-[320px]" />
+          )}
+          {visualizerType === 'lcs' && (
+            <LCSVisualizer currentStep={currentStep} className="min-h-[320px]" />
+          )}
+          {visualizerType === 'bellmanford' && (
+            <BellmanFordVisualizer currentStep={currentStep} className="min-h-[350px]" />
           )}
           {visualizerType === 'mergepattern' && <MergePatternVisualizer currentStep={currentStep} className="h-[300px]" />}
           <ControlPanel executionState={executionState} speed={speed} progress={progress} onRun={run} onPause={pause} onStep={step} onReset={reset} onSpeedChange={setSpeed} />
