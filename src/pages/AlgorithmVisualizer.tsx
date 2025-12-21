@@ -245,7 +245,14 @@ export default function AlgorithmVisualizer() {
             <MazeVisualizer currentStep={currentStep} className="min-h-[300px]" />
           )}
           {visualizerType === 'knight' && (
-            <KnightVisualizer currentStep={currentStep} className="min-h-[300px]" />
+            <KnightVisualizer 
+              currentStep={currentStep} 
+              onStartPositionChange={(x, y) => {
+                const size = (currentInput as { size?: number }).size || 5;
+                handleInputChange({ size, startX: x, startY: y });
+              }}
+              className="min-h-[300px]" 
+            />
           )}
           {visualizerType === 'knapsack01' && (
             <Knapsack01Visualizer currentStep={currentStep} className="min-h-[320px]" />

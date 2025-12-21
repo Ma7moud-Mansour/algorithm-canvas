@@ -1,16 +1,16 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useCallback } from 'react';
 import { VisualizationStep } from '@/types/algorithm';
 import { cn } from '@/lib/utils';
 
 interface KnightVisualizerProps {
   currentStep: VisualizationStep | null;
-  onStartPositionSelect?: (x: number, y: number) => void;
+  onStartPositionChange?: (x: number, y: number) => void;
   className?: string;
 }
 
 const MAX_GRID_DIMENSION = 280; // Maximum grid dimension in pixels
 
-export function KnightVisualizer({ currentStep, onStartPositionSelect, className }: KnightVisualizerProps) {
+export function KnightVisualizer({ currentStep, onStartPositionChange, className }: KnightVisualizerProps) {
   const payload = currentStep?.payload || {};
   const board = (payload.board as number[][]) || [];
   const size = (payload.size as number) || 5;
@@ -22,17 +22,27 @@ export function KnightVisualizer({ currentStep, onStartPositionSelect, className
   const accessCount = payload.accessCount as number | undefined;
   const kind = currentStep?.kind || 'init';
   const solved = payload.solved as boolean | undefined;
+  const startXFromPayload = payload.startX as number | undefined;
+  const startYFromPayload = payload.startY as number | undefined;
 
   // Track if we're in selection mode (before algorithm starts)
-  const [selectionMode, setSelectionMode] = useState(false);
-  const [selectedStart, setSelectedStart] = useState<{ x: number; y: number } | null>(null);
+  const [selectionMode, setSelectionMode] = useState(true);
+  const [selectedStart, setSelectedStart] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [hoverCell, setHoverCell] = useState<{ x: number; y: number } | null>(null);
+
+  // Initialize selected start from payload
+  useEffect(() => {
+    if (startXFromPayload !== undefined && startYFromPayload !== undefined) {
+      setSelectedStart({ x: startXFromPayload, y: startYFromPayload });
+    }
+  }, [startXFromPayload, startYFromPayload]);
 
   // Enable selection mode when at init step and no moves have been made
   useEffect(() => {
-    if (kind === 'init' && !board.some(row => row.some(cell => cell >= 0))) {
+    const hasVisited = board.some(row => row.some(cell => cell >= 0));
+    if (kind === 'init' && !hasVisited) {
       setSelectionMode(true);
-    } else {
+    } else if (hasVisited) {
       setSelectionMode(false);
     }
   }, [kind, board]);
@@ -41,12 +51,12 @@ export function KnightVisualizer({ currentStep, onStartPositionSelect, className
   const cellSize = useMemo(() => Math.floor(MAX_GRID_DIMENSION / size), [size]);
   const gridDimension = cellSize * size;
 
-  const handleCellClick = (row: number, col: number) => {
-    if (selectionMode && onStartPositionSelect) {
+  const handleCellClick = useCallback((row: number, col: number) => {
+    if (selectionMode) {
       setSelectedStart({ x: row, y: col });
-      onStartPositionSelect(row, col);
+      onStartPositionChange?.(row, col);
     }
-  };
+  }, [selectionMode, onStartPositionChange]);
 
   const getCellClass = (row: number, col: number) => {
     const value = board[row]?.[col] ?? -1;
@@ -93,24 +103,23 @@ export function KnightVisualizer({ currentStep, onStartPositionSelect, className
   };
 
   const getCellContent = (row: number, col: number) => {
-    if (selectionMode) {
-      if (selectedStart?.x === row && selectedStart?.y === col) {
-        return '♞';
-      }
-      return '';
+    // Always show knight on selected position in selection mode
+    if (selectionMode && selectedStart.x === row && selectedStart.y === col) {
+      return '♞';
+    }
+    
+    // Show knight on current position during algorithm execution
+    if (!selectionMode && row === currentX && col === currentY) {
+      return '♞';
     }
 
     const value = board[row]?.[col] ?? -1;
-    const isCurrent = row === currentX && col === currentY;
     const isNext = row === nextX && col === nextY && kind === 'try-move';
 
-    if (isCurrent || (isNext && kind !== 'try-move' && kind !== 'backtrack')) {
-      return '♞';
-    }
-    if (isNext && kind === 'try-move') {
+    if (isNext) {
       return '?';
     }
-    if (value >= 0) {
+    if (value >= 0 && !(row === currentX && col === currentY)) {
       return value;
     }
     return '';

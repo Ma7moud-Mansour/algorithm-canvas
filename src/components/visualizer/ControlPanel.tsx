@@ -103,7 +103,15 @@ export function ControlPanel({
           </Button>
 
           <Button
-            onClick={isRunning ? onPause : onRun}
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              if (isRunning) {
+                onPause();
+              } else {
+                onRun();
+              }
+            }}
             disabled={isCompleted}
             className={cn(
               'h-12 w-12 rounded-full',

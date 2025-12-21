@@ -27,8 +27,14 @@ export function MergePatternVisualizer({
   const mergeCost = payload.mergeCost as number | undefined;
   const kind = currentStep?.kind || 'init';
 
-  // Calculate max size for scaling bars
-  const maxSize = useMemo(() => Math.max(...heap, 1), [heap]);
+  // Calculate max size for scaling bars - use all values including from history
+  const allValues = useMemo(() => {
+    const historyValues = mergeHistory.flatMap(m => [m.first, m.second, m.result]);
+    return [...heap, ...historyValues];
+  }, [heap, mergeHistory]);
+  
+  const maxSize = useMemo(() => Math.max(...allValues, 1), [allValues]);
+  const minSize = useMemo(() => Math.min(...heap.filter(v => v > 0), 1), [heap]);
 
   // Determine which indices are selected (first two in heap during select phase)
   const selectedIndices = useMemo(() => {
@@ -60,26 +66,21 @@ export function MergePatternVisualizer({
           <span className="text-muted-foreground/50">({heap.length} elements)</span>
         </div>
 
-        <div className="flex items-end gap-2 h-36 p-3 bg-panel rounded-lg border border-panel-border">
+        <div className="flex items-end gap-2 h-32 p-3 bg-panel rounded-lg border border-panel-border">
           {heap.length === 0 ? (
             <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
               Heap is empty - All files merged!
             </div>
           ) : (
             heap.map((size, idx) => {
-              const heightPercent = (size / maxSize) * 100;
+              // Calculate height based on value relative to max
+              const heightPercent = maxSize > 0 ? (size / maxSize) * 100 : 50;
               const isSelected = selectedIndices.includes(idx);
-              const isNewlyMerged = kind === 'merge' && idx === heap.length; // Won't match since heap already updated
               
               return (
                 <div
                   key={`${idx}-${size}`}
-                  className="flex flex-col items-center gap-1 flex-1 max-w-20 transition-all duration-500"
-                  style={{
-                    animation: kind === 'insert' && idx === heap.findIndex(h => h === (payload.mergeCost as number)) 
-                      ? 'fade-in 0.3s ease-out' 
-                      : undefined
-                  }}
+                  className="flex flex-col items-center gap-1 flex-1 max-w-16 transition-all duration-300"
                 >
                   {/* Value label on top */}
                   <span className={cn(
@@ -89,29 +90,29 @@ export function MergePatternVisualizer({
                     {size}
                   </span>
                   
-                  {/* Bar */}
-                  <div
-                    className={cn(
-                      "w-full rounded-t transition-all duration-500 relative",
-                      isSelected 
-                        ? "bg-primary shadow-lg shadow-primary/30" 
-                        : isNewlyMerged
-                        ? "bg-success shadow-lg shadow-success/30"
-                        : "bg-secondary/60"
-                    )}
-                    style={{
-                      height: `${Math.max(heightPercent, 15)}%`,
-                      minHeight: '24px',
-                    }}
-                  >
-                    {/* Selection indicator */}
-                    {isSelected && (
-                      <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-primary rounded-full animate-pulse" />
-                    )}
+                  {/* Bar with proper height scaling */}
+                  <div className="flex-1 w-full flex items-end">
+                    <div
+                      className={cn(
+                        "w-full rounded-t transition-all duration-500 relative",
+                        isSelected 
+                          ? "bg-primary shadow-lg shadow-primary/30" 
+                          : "bg-secondary/60"
+                      )}
+                      style={{
+                        height: `${Math.max(heightPercent, 15)}%`,
+                        minHeight: '20px',
+                      }}
+                    >
+                      {/* Selection indicator */}
+                      {isSelected && (
+                        <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-primary rounded-full animate-pulse" />
+                      )}
+                    </div>
                   </div>
                   
                   {/* Index label */}
-                  <span className="text-xs text-muted-foreground">{idx + 1}</span>
+                  <span className="text-xs text-muted-foreground flex-shrink-0">{idx + 1}</span>
                 </div>
               );
             })
@@ -145,15 +146,15 @@ export function MergePatternVisualizer({
       </div>
 
       {/* Merge History */}
-      <div>
-        <div className="text-xs text-muted-foreground mb-2 flex items-center justify-between">
+      <div className="flex-1 min-h-0 overflow-hidden">
+        <div className="text-xs text-muted-foreground mb-2 flex items-center justify-between flex-shrink-0">
           <span>Merge History</span>
           {mergeHistory.length > 0 && (
             <span className="text-muted-foreground/50">{mergeHistory.length} merges</span>
           )}
         </div>
         
-        <div className="space-y-1.5 max-h-28 overflow-y-auto scrollbar-thin">
+        <div className="space-y-1.5 max-h-24 overflow-y-auto pr-1">
           {mergeHistory.length === 0 ? (
             <div className="text-sm text-muted-foreground p-2 text-center bg-panel rounded">
               No merges yet - waiting to start

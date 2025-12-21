@@ -26,6 +26,9 @@ export function InputPanel({ type, onInputChange, className }: InputPanelProps) 
   const [str2, setStr2] = useState('AEDFHR');
   const [k01Items, setK01Items] = useState('2:3, 3:4, 4:5, 5:6');
   const [k01Capacity, setK01Capacity] = useState('5');
+  const [bfVertices, setBfVertices] = useState('5');
+  const [bfEdges, setBfEdges] = useState('0-1:-1, 0-2:4, 1-2:3, 1-3:2, 1-4:2, 3-2:5, 3-1:1, 4-3:-3');
+  const [bfSource, setBfSource] = useState('0');
   const [error, setError] = useState('');
 
   const parseArray = (input: string): number[] | null => {
@@ -160,7 +163,30 @@ export function InputPanel({ type, onInputChange, className }: InputPanelProps) 
     }
 
     if (type === 'bellmanford') {
-      onInputChange({});
+      const vertices = parseInt(bfVertices, 10);
+      if (isNaN(vertices) || vertices < 2 || vertices > 8) {
+        setError('Vertices must be between 2 and 8');
+        return;
+      }
+      const source = parseInt(bfSource, 10);
+      if (isNaN(source) || source < 0 || source >= vertices) {
+        setError(`Source must be between 0 and ${vertices - 1}`);
+        return;
+      }
+      try {
+        const edges = bfEdges.split(',').map(e => {
+          const [nodes, weight] = e.trim().split(':');
+          const [u, v] = nodes.split('-').map(n => parseInt(n.trim(), 10));
+          const w = parseInt(weight.trim(), 10);
+          if (isNaN(u) || isNaN(v) || isNaN(w)) throw new Error('Invalid format');
+          if (u < 0 || u >= vertices || v < 0 || v >= vertices) throw new Error('Invalid node');
+          return { u, v, weight: w };
+        });
+        if (edges.length === 0) throw new Error('No edges');
+        onInputChange({ vertices, edges, source });
+      } catch {
+        setError('Format: u-v:weight, ... (e.g., 0-1:4, 1-2:-1)');
+      }
       return;
     }
 
@@ -275,7 +301,21 @@ export function InputPanel({ type, onInputChange, className }: InputPanelProps) 
     }
 
     if (type === 'bellmanford') {
-      onInputChange({});
+      const vertices = Math.floor(Math.random() * 4) + 4;
+      setBfVertices(vertices.toString());
+      const source = 0;
+      setBfSource('0');
+      const numEdges = Math.floor(Math.random() * 5) + vertices;
+      const edges: Array<{ u: number; v: number; weight: number }> = [];
+      for (let i = 0; i < numEdges; i++) {
+        const u = Math.floor(Math.random() * vertices);
+        let v = Math.floor(Math.random() * vertices);
+        while (v === u) v = Math.floor(Math.random() * vertices);
+        const weight = Math.floor(Math.random() * 15) - 5;
+        edges.push({ u, v, weight });
+      }
+      setBfEdges(edges.map(e => `${e.u}-${e.v}:${e.weight}`).join(', '));
+      onInputChange({ vertices, edges, source });
       return;
     }
 
@@ -449,7 +489,24 @@ export function InputPanel({ type, onInputChange, className }: InputPanelProps) 
     }
 
     if (type === 'bellmanford') {
-      return <p className="text-xs text-muted-foreground">Click Randomize for a new graph.</p>;
+      return (
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="bf-vertices" className="text-xs text-muted-foreground">Vertices (2-8)</Label>
+              <Input id="bf-vertices" value={bfVertices} onChange={(e) => setBfVertices(e.target.value)} className="font-mono text-sm bg-muted/50 border-panel-border" />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="bf-source" className="text-xs text-muted-foreground">Source</Label>
+              <Input id="bf-source" value={bfSource} onChange={(e) => setBfSource(e.target.value)} className="font-mono text-sm bg-muted/50 border-panel-border" />
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="bf-edges" className="text-xs text-muted-foreground">Edges (u-v:weight, ...)</Label>
+            <Input id="bf-edges" value={bfEdges} onChange={(e) => setBfEdges(e.target.value)} className="font-mono text-sm bg-muted/50 border-panel-border" />
+          </div>
+        </div>
+      );
     }
 
     return (
