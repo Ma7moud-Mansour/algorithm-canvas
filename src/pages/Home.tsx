@@ -28,6 +28,10 @@ export default function Home() {
             <span className="text-sm text-primary font-medium">Interactive Algorithm Learning</span>
           </div>
 
+          <p className="text-lg md:text-xl font-semibold text-primary mb-4 animate-fade-in-up">
+            Welcome RANO
+          </p>
+
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
             <span className="text-foreground">Visualize Algorithms</span>
             <br />
@@ -191,7 +195,7 @@ export default function Home() {
       <footer className="py-12 px-6 border-t border-panel-border">
         <div className="max-w-6xl mx-auto text-center">
           <p className="text-sm text-muted-foreground">
-            Built with React, TypeScript, and Tailwind CSS. 
+            Built with React, TypeScript, and Tailwind CSS.
             <span className="text-gradient font-medium ml-1">AlgoLab</span> — Learn algorithms visually.
           </p>
         </div>

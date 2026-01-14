@@ -11,6 +11,62 @@
 
 @layer base {
   :root {
+    /* Light Mode Defaults (Inverted from original Dark Mode) */
+    --background: 0 0% 100%;
+    --background-start: 210 40% 98%;
+    --background-end: 210 40% 96%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --primary: 302 100% 45%; /* Slightly darker for contrast on white */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 43 100% 45%; /* Slightly darker */
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 302 100% 45%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 215.4 16.3% 46.9%;
+    --sidebar-primary: 302 100% 45%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 210 40% 96.1%;
+    --sidebar-accent-foreground: 222.2 47.4% 11.2%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 302 100% 45%;
+
+    /* Custom tokens */
+    --code-background: 220 14% 96%;
+    --code-line-highlight: 43 100% 80%;
+    --glow-primary: 302 100% 45%;
+    --glow-secondary: 43 100% 45%;
+    --panel-glass: 0 0% 100%;
+    --panel-border: 220 13% 91%;
+    --success: 142 76% 36%;
+    --warning: 43 100% 45%;
+    --info: 199 89% 48%;
+  }
+
+  .dark {
+    /* Original Dark Mode Values */
     --background: 220 20% 7%;
     --background-start: 220 20% 5%;
     --background-end: 215 35% 12%;
@@ -40,8 +96,6 @@
     --border: 215 25% 22%;
     --input: 215 25% 22%;
     --ring: 302 100% 52%;
-
-    --radius: 0.75rem;
 
     --sidebar-background: 215 30% 10%;
     --sidebar-foreground: 215 20% 70%;

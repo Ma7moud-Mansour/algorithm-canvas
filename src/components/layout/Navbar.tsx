@@ -1,7 +1,8 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, Github, BookOpen, Sparkles, PanelLeftClose, PanelLeft } from 'lucide-react';
+import { Menu, Github, BookOpen, Sparkles, PanelLeftClose, PanelLeft, Sun, Moon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useTheme } from '@/hooks/use-theme';
 
 interface NavbarProps {
   onMenuToggle: () => void;
@@ -11,6 +12,7 @@ interface NavbarProps {
 
 export function Navbar({ onMenuToggle, showMenuButton = false, sidebarOpen = false }: NavbarProps) {
   const location = useLocation();
+  const { theme, toggleTheme } = useTheme();
 
   const navLinks = [
     { to: '/', label: 'Home' },
@@ -79,6 +81,20 @@ export function Navbar({ onMenuToggle, showMenuButton = false, sidebarOpen = fal
 
         {/* Right section */}
         <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleTheme}
+            className="text-muted-foreground hover:text-foreground"
+            title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            {theme === 'dark' ? (
+              <Sun className="h-5 w-5" />
+            ) : (
+              <Moon className="h-5 w-5" />
+            )}
+          </Button>
+
           <Link to="/docs">
             <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
               <BookOpen className="h-5 w-5" />

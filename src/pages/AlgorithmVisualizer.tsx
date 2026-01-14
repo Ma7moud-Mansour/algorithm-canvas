@@ -23,6 +23,7 @@ import { AlgorithmInfo } from '@/components/visualizer/AlgorithmInfo';
 import { InputPanel } from '@/components/visualizer/InputPanel';
 import { LanguageTabs } from '@/components/visualizer/LanguageTabs';
 import { useVisualizationEngine } from '@/hooks/useVisualizationEngine';
+import { AskAlgorithm } from '@/components/AskAlgorithm';
 import { getAlgorithmById, getCategoryById } from '@/algorithms/config';
 import { bubbleSortCode, selectionSortCode, quickSortCode, insertionSortCode, mergeSortCode } from '@/algorithms/code/sorting';
 import { linearSearchCode, binarySearchCode } from '@/algorithms/code/searching';
@@ -212,6 +213,8 @@ export default function AlgorithmVisualizer() {
           </div>
         </div>
         <p className="text-muted-foreground mt-2">{algorithm.description}</p>
+
+        <AskAlgorithm algorithmName={algorithm.name} />
       </header>
 
       <div className="mb-4">
@@ -221,7 +224,7 @@ export default function AlgorithmVisualizer() {
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6">
         <div className="space-y-4">
           <CodePanel code={currentCode} highlightedLine={currentStep?.codeLine} className="h-[400px]" />
-          <InputPanel type={inputType} onInputChange={handleInputChange} />
+          <InputPanel type={inputType} onInputChange={handleInputChange} algorithmId={id} />
         </div>
         <div className="space-y-4">
           {visualizerType === 'array' && <ArrayVisualizer currentStep={currentStep} className="h-[300px]" />}
@@ -235,23 +238,23 @@ export default function AlgorithmVisualizer() {
           {visualizerType === 'knapsack' && <KnapsackVisualizer currentStep={currentStep} className="h-[300px]" />}
           {visualizerType === 'mergepattern' && <MergePatternVisualizer currentStep={currentStep} className="h-[300px]" />}
           {visualizerType === 'sudoku' && (
-            <SudokuVisualizer 
-              currentStep={currentStep} 
+            <SudokuVisualizer
+              currentStep={currentStep}
               initialBoard={(currentInput as SudokuInput)?.board}
-              className="min-h-[320px]" 
+              className="min-h-[320px]"
             />
           )}
           {visualizerType === 'maze' && (
             <MazeVisualizer currentStep={currentStep} className="min-h-[300px]" />
           )}
           {visualizerType === 'knight' && (
-            <KnightVisualizer 
-              currentStep={currentStep} 
+            <KnightVisualizer
+              currentStep={currentStep}
               onStartPositionChange={(x, y) => {
                 const size = (currentInput as { size?: number }).size || 5;
                 handleInputChange({ size, startX: x, startY: y });
               }}
-              className="min-h-[300px]" 
+              className="min-h-[300px]"
             />
           )}
           {visualizerType === 'knapsack01' && (
@@ -263,17 +266,17 @@ export default function AlgorithmVisualizer() {
           {visualizerType === 'bellmanford' && (
             <BellmanFordVisualizer currentStep={currentStep} className="min-h-[350px]" />
           )}
-          <ControlPanel 
-            executionState={executionState} 
-            speed={speed} 
+          <ControlPanel
+            executionState={executionState}
+            speed={speed}
             progress={progress}
             currentStepIndex={currentStepIndex}
             totalSteps={totalSteps}
-            onRun={run} 
-            onPause={pause} 
+            onRun={run}
+            onPause={pause}
             onStep={step}
             onStepBack={stepBack}
-            onReset={reset} 
+            onReset={reset}
             onSpeedChange={setSpeed}
             onGoToStep={goToStep}
           />
